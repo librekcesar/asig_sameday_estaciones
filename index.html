@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="leaflet-search-master/leaflet-search-master/src/leaflet-search.css" />
+    <script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.css" />
+    <script src="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
+    <script src="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.js"></script>
+
+
+    
+    <script type="text/javascript" src="sameday_div_sp_copia_div_cober.js"></script>
+    <script type="text/javascript" src="sameday_div_sp_time.js"></script>
+    <script type="text/javascript" src="ubicaciones_iztacalco_polanco_copia.js"></script>
+    
+    
+
+    <style>
+        #map {
+            width: 100%;
+            height: 900px;
+        }
+
+        #map-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 25px;
+            z-index: 1000;
+        }
+
+        .leaflet-control-search {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        /* ESTILOS DE LA LEYENDA MODIFICADOS */
+        #map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5em;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            
+            /* Agregamos las propiedades para el scroll */
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Estilo para el título/botón de la leyenda */
+        #legend-toggle {
+            cursor: pointer;
+            margin-bottom: 5px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Estilo para el ícono de colapsado */
+        #toggle-icon {
+            float: right;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Opcional: Oculta el contenido si quieres que empiece colapsado */
+        /* #legend-content {
+            display: none;
+        } */
+    </style>
+</head>
+<body>
+    <div id="map-title"> Cobertura SameDay</div>
+    <div id="map"></div>
+
+    <div id="map-legend" class="legend">
+        <h4 id="legend-toggle">Simbología <span id="toggle-icon">▼</span></h4>
+        <div id="legend-content">
+            <div><span style="background-color: #6c0de8ce; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Iztacalco</div>
+            <div><span style="background-color: #f32cc4d4; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Polanco</div>
+            <div><span style="background-color: #2cee0eef; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 1: Menor a 5 minutos</div>
+            <div><span style="background-color: #eeee29; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 2: De 5 a 7 minutos</div>
+            <div><span style="background-color: #ec9d0a; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 3: De 7 a 10 minutos</div>
+            <div><span style="background-color: #ca0505; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 4: Mayor a 10 minutos</div>
+            
+        </div>
+    </div>
+
+    <script>
+        var map = L.map("map").setView([19.466094, -99.1392], 11);
+        L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+
+/////capa de puntos
+  var centroLayer = L.geoJSON(puntos, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 6,
+                    fillColor: "blue",
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties) {
+                    layer.bindPopup("Dirección: " + feature.properties.direccion);
+                }
+            }
+        }).addTo(map);
+////fin de capa de puntos
+
+
+
+
+        function getColor(estacion_serv) {
+            switch (estacion_serv) {
+                case 'Polanco': return '#6c0de8ce';
+                case 'Iztacalco': return '#f32cc4d4';
+                
+                default: return 'black';
+            }
+        }
+
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties.estacion_serv),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup('<p> Código de estación: ' + feature.properties.station_code + '</p><p>Área de servicio por ubicacion: ' + feature.properties.estacion_serv + '</p><p>Zonificación: ' + feature.properties.zonificacion  + '</p><p>Código postal: ' + feature.properties.zipcode + '</p>');
+            }
+        }
+
+        var layerGroup = L.geoJSON(divprop, {
+            style: style,
+            onEachFeature: onEachFeature
+        });
+
+
+        /////Segunda capa: 
+
+        function getColor2(TIME_DIS) {
+            switch (TIME_DIS) {
+                case 'Menor a 5 min': return '#2cee0eef';
+                case '> a 5 min & < a 7 min': return '#eeee29';
+                case '> a 7 min & < a 10 min': return '#ec9d0a';
+                case 'Mayor a 10 min': return '#ca0505';
+
+                default: return 'black';
+            }
+        }
+
+        function style2(feature) {
+            return {
+                fillColor: getColor2(feature.properties.TIME_DIS),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature2(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup('<p> Código de estación: ' + feature.properties.station_code + '</p><p>Tiempo de traslado desde ubicación: ' + feature.properties.TIME_DIS + '</p><p>Zonificación: ' + feature.properties.zonificacion  + '</p><p>Código postal: ' + feature.properties.zipcode + '</p>');
+            }
+        }
+
+        var layerGroup2 = L.geoJSON(time, {
+            style: style2,
+            onEachFeature: onEachFeature2
+        });
+
+        ////////////////
+        ////
+
+        var baseMaps = {
+            "Mapa Base": map
+        };
+
+        var overlayMaps = {
+            "Asignación de SP´s actual": layerGroup,
+            "Asignación de SP´s propuesta": layerGroup2,
+            "Ubicación de estaciones SDM": centroLayer    
+        };
+
+        L.control.layers(baseMaps, overlayMaps, {
+            collapsed: false,
+            position: "topleft"
+        }).addTo(map);
+
+        layerGroup.addTo(map);
+
+        
+        /* === CÓDIGO JAVASCRIPT AÑADIDO PARA LA LEYENDA COLAPSABLE Y SCROLLABLE === */
+        
+        // Selecciona los elementos del DOM
+        var legendToggle = document.getElementById('legend-toggle');
+        var legendContent = document.getElementById('legend-content');
+        var toggleIcon = document.getElementById('toggle-icon');
+        var legendContainer = document.getElementById('map-legend');
+
+        // Define el estado inicial de la leyenda (true para empezar colapsada, false para expandida)
+        var isCollapsed = false;
+
+        // Opcional: Para que la leyenda empiece colapsada por defecto
+        /*
+        legendContent.style.display = 'none';
+        legendContainer.style.maxHeight = '50px'; 
+        toggleIcon.textContent = '▶';
+        isCollapsed = true;
+        */
+
+        // Agrega el evento de clic al título de la leyenda
+        legendToggle.addEventListener('click', function() {
+            isCollapsed = !isCollapsed; // Cambia el estado
+
+            if (isCollapsed) {
+                legendContent.style.display = 'none';
+                legendContainer.style.maxHeight = '40px'; // Altura más pequeña para el título
+                toggleIcon.textContent = '▶';
+            } else {
+                legendContent.style.display = 'block';
+                legendContainer.style.maxHeight = '300px'; // Restaura a la altura máxima con scroll
+                toggleIcon.textContent = '▼';
+            }
+        });
+
+    </script>
+</body>
+</html>
