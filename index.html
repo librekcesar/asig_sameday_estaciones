@@ -16,6 +16,8 @@
     <script type="text/javascript" src="sameday_div_sp_copia_div_cober.js"></script>
     <script type="text/javascript" src="sameday_div_sp_time.js"></script>
     <script type="text/javascript" src="ubicaciones_iztacalco_polanco_copia.js"></script>
+    <script type="text/javascript" src="sameday_div_no_sp.js"></script>
+    <script type="text/javascript" src="sameday_div_no_sp_2.js"></script>
     
     
 
@@ -89,8 +91,8 @@
     <div id="map-legend" class="legend">
         <h4 id="legend-toggle">Simbología <span id="toggle-icon">▼</span></h4>
         <div id="legend-content">
-            <div><span style="background-color: #6c0de8ce; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Polanco</div>
-            <div><span style="background-color: #f32cc4d4; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Iztacalco</div>
+            <div><span style="background-color: #6c0de8ce; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Iztacalco</div>
+            <div><span style="background-color: #f32cc4d4; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Asignación de cobertura a ubicación de Polanco</div>
             <div><span style="background-color: #2cee0eef; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 1: Menor a 5 minutos</div>
             <div><span style="background-color: #eeee29; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 2: De 5 a 7 minutos</div>
             <div><span style="background-color: #ec9d0a; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 3: De 7 a 10 minutos</div>
@@ -198,15 +200,85 @@
         });
 
         ////////////////
+        ////tercera capa 
+        function getColor3(seg_prop_div) {
+            switch (seg_prop_div) {
+                case 'Polanco': return '#6c0de8ce';
+                case 'Iztacalco': return '#f32cc4d4';
+                
+                default: return 'black';
+            }
+        }
+
+        function style3(feature) {
+            return {
+                fillColor: getColor3(feature.properties.seg_prop_div),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature3(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup('<p> Código de estación: ' + feature.properties.station_code + '</p><p>Área de servicio por ubicacion: ' + feature.properties.seg_prop_div + '</p><p>Zonificación: ' + feature.properties.zonificacion  + '</p><p>Código postal: ' + feature.properties.zipcode + '</p>');
+            }
+        }
+
+        var layerGroup3 = L.geoJSON(segdiv, {
+            style: style3,
+            onEachFeature: onEachFeature3
+        });
+
         ////
+        ////Cuarta capa
+
+        function getColor4(TIME_DIS_2) {
+            switch (TIME_DIS_2) {
+                case 'Menor a 5 min': return '#2cee0eef';
+                case '> a 5 min & < 7 min': return '#eeee29';
+                case '> a 7 min & < 10 min': return '#ec9d0a';
+                case 'Mayor a 10 min': return '#ca0505';
+
+                default: return 'black';
+            }
+        }
+
+        function style4(feature) {
+            return {
+                fillColor: getColor4(feature.properties.TIME_DIS_2),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature4(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup('<p> Código de estación: ' + feature.properties.station_code + '</p><p>Tiempo de traslado desde ubicación: ' + feature.properties.TIME_DIS_2 + '</p><p>Zonificación: ' + feature.properties.zonificacion  + '</p><p>Código postal: ' + feature.properties.zipcode + '</p>');
+            }
+        }
+
+        var layerGroup4 = L.geoJSON(time2, {
+            style: style4,
+            onEachFeature: onEachFeature4
+        });
+
+        //////
 
         var baseMaps = {
             "Mapa Base": map
         };
 
         var overlayMaps = {
-            "Asignación de cobertura": layerGroup,
-            "Tiempo de traslado desde ubicaciones": layerGroup2,
+            "Asignación de SP´s actual": layerGroup,
+            "Asignación de SP´s propuesta": layerGroup2,
+            "Asignación de cobertura sin respetar configuración de SP´s": layerGroup3,
+            "Tiempo de traslado desde estaciones (sin respetar configuración de SP´s)": layerGroup4,
             "Ubicación de estaciones SDM": centroLayer    
         };
 
@@ -254,6 +326,4 @@
 
     </script>
 </body>
-
 </html>
-
